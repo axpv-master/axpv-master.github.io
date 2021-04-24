@@ -1,0 +1,36 @@
+name: auto
+
+# Controls when the action will run. 
+on:
+  push:
+    branches: config
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v2.1.5
+
+      - name: Install hexo
+        run: sudo npm install hexo-cli -g
+
+      - name: Generate
+        env:
+          name: ${{ secrets.NAME }}
+        run: |
+          hexo init blog
+          git clone -b config github.com/$name config
+          rm blog/*
+          mv config/* blog
+          cd blog
+          hexo g
+          cd ../
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          personal_token: ${{ secrets.TOKEN }}
+          external_repository: ${{ secrets.NAME }}
+          publish_branch: hexo
+          publish_dir: ./blog/public/
